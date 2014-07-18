@@ -5,16 +5,14 @@ angular.module('app', [
 
   $scope.incrementIndex = function(){
     this.currentIndex++;
-    if(this.currentIndex >= this.headlines.length){
-      this.currentIndex -= this.headlines.length;
-    }
   };
 
-  $scope.isIndex = function(index){
-    return index === $scope.currentIndex;
+  $scope.isIndex = function(index, list){
+    var len = list.length;
+    return index === ($scope.currentIndex)%(len);
   };
 
-  $scope.headlines = [];
+  $scope.espnHeadlines = [];
   $scope.nprHeadlines = [];
 
   $scope.images = [{
@@ -33,10 +31,10 @@ angular.module('app', [
     .success(function(data, status, headers, config) {
       // this callback will be called asynchronously
       // when the response is available
-      $scope.headlines = [];
+      $scope.espnHeadlines = [];
       for(var i = 0; i < data.feed.length; i++){
         var cur = data.feed[i];
-        $scope.headlines.push(cur);
+        $scope.espnHeadlines.push(cur);
       }
       console.log('Espn Data Successfuly Retrieved!');
     }).
@@ -47,6 +45,7 @@ angular.module('app', [
       console.log(data);
     });
   };
+  $scope.espnData();
 
   $scope.nprData = function(){
     $http({method: 'GET', url: 'http://api.npr.org/query?id=1001&output=JSON&apiKey=MDE1MTA4OTE4MDE0MDQ0MzIxMDc5NGM4NQ001'})
@@ -54,19 +53,34 @@ angular.module('app', [
       $scope.nprHeadlines = [];
       for(var i = 0; i < 10; i++){
         var cur = data.list.story[i];
-        $scope.nprHeadlines.push(cur);
+        if(cur.image){
+          $scope.nprHeadlines.push(cur);
+        }
       }
-      console.log($scope.nprHeadlines);
     })
     .error(function(data){
       console.log('Failed to get NPR Data');
+      console.log(data);
     });
   };
-
-  $scope.espnData();
-
-
   $scope.nprData();
+
+
+  //NYT doesn't work because of CORS issue
+  // $scope.nytData = function(){
+  //   $http({method: 'GET', url:'https://api.nytimes.com/svc/mostpopular/v2/mostviewed/all-sections/30.json?api-key=e2b1f7667879592757cc3da7469143a4:12:69582901'})
+  //   .success(function(data){
+      
+      
+  //     console.log(data);
+  //   })
+  //   .error(function(data){
+  //     console.log('Failed to get NYT Data');
+  //     console.log(data);
+  //   });
+  // };
+  // $scope.nytData();
+
 
   setInterval(function(){
     $scope.$apply(function(){
@@ -76,6 +90,7 @@ angular.module('app', [
 
   setInterval(function(){
     $scope.espnData();
+    $scope.nprData();
   }, 60000);
 
 
